@@ -11,6 +11,9 @@ ITERACIONES EQU 5                   ; numero de repeticiones del bucle
 section .data
     bienvenida  db "=== Laboratorio NASM - Unidad 4 ===", CR, LF, TERMINADOR
     separador   db "----------------------------------------", CR, LF, TERMINADOR
+    linea_gruesa:
+        TIMES 40 DB '='             ; repite el byte '=' 40 veces en tiempo de ensamblado
+                 DB CR, LF, TERMINADOR
     etiqueta_a  db "Variable A (word): ", TERMINADOR
     etiqueta_b  db "Variable B (dword): ", TERMINADOR
     fin_msg     db "Programa finalizado correctamente.", CR, LF, TERMINADOR
@@ -91,6 +94,11 @@ imprimir_tabla:
     ; Imprimir mensaje final
     mov ah, 09h
     mov dx, fin_msg
+    int 21h
+
+    ; === Linea decorativa generada con TIMES ===
+    mov ah, 09h
+    mov dx, linea_gruesa
     int 21h
 
     ; Terminar el programa

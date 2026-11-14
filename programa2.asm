@@ -21,11 +21,76 @@ main:
     mov ax, seg titulo              ; segmento de datos (NASM no reconoce @data)
     mov ds, ax
 
-    ; Demostracion de macros sin parametros
-    print_str titulo                ; expansion: mov ah,09h / mov dx,titulo / int 21h
+    ; 1. Encabezado con macro
+    print_str titulo
 
-    ; Demostracion de macro repetir_str
-    repetir_str linea_a, 3          ; imprimir linea_a exactamente 3 veces
-    repetir_str linea_b, 2          ; imprimir linea_b exactamente 2 veces
+    ; 2. Demostracion de repetir_str
+    repetir_str linea_a, 3
 
-    fin_dos                         ; terminar programa
+    ; 3. Suma 1+2+3 = 6
+    mov cx, 3
+    call sumar_serie                ; AX = 6
+    push ax                         ; guardar AX, INT 21h 09h cambia AL
+    print_str msg_mayor
+    pop ax
+    print_digito                    ; imprime "6"
+    nueva_linea
+
+    ; 4. Comparar 9 vs 4 -> mayor es 9
+    mov ax, 9
+    mov bx, 4
+    call comparar_e_imprimir
+
+    ; 5. Comparar 5 vs 5 -> iguales
+    mov ax, 5
+    mov bx, 5
+    call comparar_e_imprimir
+
+    ; 6. Mensaje final y terminacion
+    print_str msg_fin
+    fin_dos
+
+; Procedimiento: suma acumulativa 1+2+3+...+N
+; Entrada: CX = N (numero de iteraciones)
+; Salida: AX = suma total
+sumar_serie:
+    push cx                         ; preservar CX (se modifica con LOOP)
+    xor ax, ax                      ; AX = 0 (acumulador)
+.paso:
+    add ax, cx                      ; AX += CX (suma N, N-1, ..., 1)
+    loop .paso                      ; CX--; si CX != 0, continuar
+    pop cx                          ; restaurar CX original
+    ret
+
+; Procedimiento: comparar AX y BX e imprimir el mayor
+; Modifica: AH, DX (los preserva en la pila)
+comparar_e_imprimir:
+    push ax
+    push bx
+
+    cmp ax, bx                      ; actualiza flags: AX - BX (sin modificar operandos)
+    je  .son_iguales                ; si AX == BX (ZF=1)
+    jg  .ax_mayor                   ; si AX > BX con signo (SF=OF, ZF=0)
+
+    ; Caso: BX es mayor
+    print_str msg_mayor             ; imprimir etiqueta
+    mov al, bl                      ; AL = valor de BX
+    print_digito                    ; imprimir digito
+    nueva_linea
+    jmp .fin_comp
+
+.ax_mayor:
+    push ax                         ; guardar AX, INT 21h 09h cambia AL
+    print_str msg_mayor
+    pop ax
+    print_digito                    ; AX sigue en AL desde el push (se restaura despues)
+    nueva_linea
+    jmp .fin_comp
+
+.son_iguales:
+    print_str msg_iguales
+
+.fin_comp:
+    pop bx
+    pop ax
+    ret

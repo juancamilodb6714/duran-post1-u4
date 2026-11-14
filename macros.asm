@@ -60,3 +60,11 @@
     int 21h
     pop ax                          ; restaurar AX
 %endmacro
+
+; Macro: imprimir un separador corto N veces, desenrollada en tiempo de ensamblado
+; %1 = numero de copias (constante conocida al ensamblar, no un valor en tiempo de ejecucion)
+%macro bloque_decorativo 1
+    %rep %1
+    print_str separador_corto       ; cada copia se expande como codigo independiente
+    %endrep
+%endmacro

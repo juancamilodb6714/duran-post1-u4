@@ -9,6 +9,9 @@ section .data
     msg_mayor   db "El valor mayor es: ", 24h
     msg_iguales db "Los valores son iguales.", 0Dh, 0Ah, 24h
     msg_fin     db "Fin del programa.", 0Dh, 0Ah, 24h
+    separador_corto db "---", 0Dh, 0Ah, 24h
+    msg_menor_igual db "AX es menor o igual: ", 24h
+    msg_mayor2      db "AX es mayor: ", 24h
 
 section .bss
     valor_a     resw 1
@@ -45,6 +48,14 @@ main:
     mov ax, 5
     mov bx, 5
     call comparar_e_imprimir
+
+    ; 7. Bloque decorativo desenrollado con %rep (3 copias)
+    bloque_decorativo 3
+
+    ; 8. Comparacion con condicion JLE, reutilizando macros existentes
+    mov ax, 3
+    mov bx, 8
+    call comparar_menor_o_igual     ; imprime: "AX es menor o igual: 3"
 
     ; 6. Mensaje final y terminacion
     print_str msg_fin
@@ -91,6 +102,34 @@ comparar_e_imprimir:
     print_str msg_iguales
 
 .fin_comp:
+    pop bx
+    pop ax
+    ret
+
+; Procedimiento: comparar AX y BX e indicar si AX es menor o igual, o mayor
+; Reutiliza las macros print_str, print_digito y nueva_linea de macros.asm; a diferencia
+; de comparar_e_imprimir (que decide con JE/JG), aqui la decision se toma con JLE
+comparar_menor_o_igual:
+    push ax
+    push bx
+
+    cmp ax, bx                      ; actualiza flags: AX - BX
+    jle .menor_o_igual              ; si AX <= BX (con signo)
+
+    push ax                         ; guardar AX, INT 21h 09h cambia AL
+    print_str msg_mayor2
+    pop ax
+    print_digito
+    jmp .fin_cmp2
+
+.menor_o_igual:
+    push ax                         ; guardar AX, INT 21h 09h cambia AL
+    print_str msg_menor_igual
+    pop ax
+    print_digito
+
+.fin_cmp2:
+    nueva_linea
     pop bx
     pop ax
     ret
